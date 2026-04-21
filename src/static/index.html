@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monero Payment Gateway</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="header-content">
+        <div class="logo">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <circle cx="16" cy="16" r="14" stroke="#FF6B00" stroke-width="2"/>
+            <path d="M16 8v16M12 12l4-4 4 4M12 20l4 4 4-4" stroke="#FF6B00" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <span>MoneroPay</span>
+        </div>
+        <div class="header-status" id="statusBadge">
+          <span class="status-dot"></span>
+          <span class="status-text">Connecting...</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="main">
+      <div class="sidebar">
+        <nav class="nav">
+          <a href="#" class="nav-item active" data-view="dashboard">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="2" width="7" height="7" rx="1"/>
+              <rect x="11" y="2" width="7" height="7" rx="1"/>
+              <rect x="2" y="11" width="7" height="7" rx="1"/>
+              <rect x="11" y="11" width="7" height="7" rx="1"/>
+            </svg>
+            Dashboard
+          </a>
+          <a href="#" class="nav-item" data-view="create">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="10" cy="10" r="8"/>
+              <path d="M10 6v8M6 10h8"/>
+            </svg>
+            Create Invoice
+          </a>
+          <a href="#" class="nav-item" data-view="simulator">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="4" width="16" height="12" rx="2"/>
+              <path d="M6 16h8"/>
+            </svg>
+            Simulator
+          </a>
+          <a href="#" class="nav-item" data-view="settings">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="10" cy="10" r="3"/>
+              <path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.22 4.22l1.42 1.42M14.36 14.36l1.42 1.42M4.22 15.78l1.42-1.42M14.36 5.64l1.42-1.42"/>
+            </svg>
+            Settings
+          </a>
+        </nav>
+
+        <div class="demo-banner" id="demoBanner">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="8" cy="8" r="6"/>
+            <path d="M8 5v3l2 1"/>
+          </svg>
+          Demo Mode
+        </div>
+      </div>
+
+      <div class="content">
+        <!-- Dashboard View -->
+        <div class="view active" id="dashboardView">
+          <div class="page-header">
+            <h1>Dashboard</h1>
+            <button class="btn btn-primary" id="newInvoiceBtn">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M8 3v10M3 8h10"/>
+              </svg>
+              New Invoice
+            </button>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-label">Total Invoices</div>
+              <div class="stat-value" id="totalInvoices">-</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Pending</div>
+              <div class="stat-value pending" id="pendingInvoices">-</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Paid</div>
+              <div class="stat-value paid" id="paidInvoices">-</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Confirmed</div>
+              <div class="stat-value confirmed" id="confirmedInvoices">-</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h2>Recent Invoices</h2>
+              <button class="btn btn-ghost" id="refreshInvoicesBtn">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M2 8a6 6 0 0 1 11.46-2.46M14 8a6 6 0 0 1-11.46 2.46"/>
+                  <path d="M2 4v4h4M14 12V8h-4"/>
+                </svg>
+                Refresh
+              </button>
+            </div>
+            <div class="invoice-table-wrapper">
+              <table class="invoice-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Amount</th>
+                    <th>Address</th>
+                    <th>Status</th>
+                    <th>Expires</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="invoicesTableBody">
+                  <tr>
+                    <td colspan="6" class="empty-state">Loading invoices...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Create Invoice View -->
+        <div class="view" id="createView">
+          <div class="page-header">
+            <h1>Create Invoice</h1>
+          </div>
+
+          <div class="card create-card">
+            <form id="createInvoiceForm">
+              <div class="form-group">
+                <label for="amount">Amount (XMR)</label>
+                <input type="number" id="amount" name="amount" step="0.0001" min="0.0001" placeholder="0.5" required>
+                <span class="form-hint">Enter the amount in Monero (XMR)</span>
+              </div>
+
+              <div class="form-group">
+                <label>Payment Address (generated automatically)</label>
+                <div class="address-preview" id="generatedAddress">
+                  <span class="placeholder">Creating invoice will generate address...</span>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-lg">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 9l4-4 4 4M7 5v8"/>
+                </svg>
+                Create Invoice
+              </button>
+            </form>
+          </div>
+
+          <div class="card hidden" id="invoiceResult">
+            <div class="card-header">
+              <h2>Invoice Created</h2>
+            </div>
+            <div class="invoice-details">
+              <div class="detail-row">
+                <span class="detail-label">Invoice ID</span>
+                <span class="detail-value" id="resultId"></span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Amount</span>
+                <span class="detail-value" id="resultAmount"></span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Payment Address</span>
+                <code class="detail-value address" id="resultAddress"></code>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Expires</span>
+                <span class="detail-value" id="resultExpires"></span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Status</span>
+                <span class="status-badge pending" id="resultStatus">pending</span>
+              </div>
+              <div class="detail-row qr-row">
+                <span class="detail-label">QR Code</span>
+                <img id="resultQR" alt="Payment QR Code" />
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Copy</span>
+                <button class="btn btn-ghost" id="copyAddressBtn">Copy Address</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Simulator View -->
+        <div class="view" id="simulatorView">
+          <div class="page-header">
+            <h1>Payment Simulator</h1>
+            <span class="badge badge-info">Demo Mode Only</span>
+          </div>
+
+          <div class="card simulator-card">
+            <div class="simulator-header">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="4" width="20" height="16" rx="2"/>
+                <path d="M6 16h12"/>
+              </svg>
+              <span>Simulate incoming payments</span>
+            </div>
+
+            <div class="simulator-body">
+              <div class="simulator-output" id="simulatorOutput">
+                <div class="sim-line system">Monero Payment Simulator v1.0</div>
+                <div class="sim-line system">Type "help" for available commands</div>
+                <div class="sim-line prompt"><span class="prompt-char">></span> <span class="cursor">_</span></div>
+              </div>
+
+              <div class="simulator-input-wrapper">
+                <span class="prompt-char">></span>
+                <input type="text" id="simulatorInput" placeholder="Type a command..." autocomplete="off">
+              </div>
+            </div>
+
+            <div class="simulator-help">
+              <div class="help-title">Available Commands</div>
+              <div class="help-grid">
+                <code>send &lt;amount&gt; &lt;address&gt;</code>
+                <span>Simulate payment</span>
+                <code>balance</code>
+                <span>Show demo balance</span>
+                <code>clear</code>
+                <span>Clear transfers</span>
+                <code>help</code>
+                <span>Show help</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h2>Active Invoice</h2>
+              <button class="btn btn-ghost btn-sm" id="loadInvoiceBtn">Load from ID</button>
+            </div>
+            <div class="quick-sim">
+              <input type="text" id="quickAddress" placeholder="Paste XMR address...">
+              <input type="number" id="quickAmount" placeholder="Amount" step="0.0001">
+              <button class="btn btn-primary" id="quickSendBtn">Send Payment</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Settings View -->
+        <div class="view" id="settingsView">
+          <div class="page-header">
+            <h1>Settings</h1>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h2>Connection Status</h2>
+            </div>
+            <div class="settings-list">
+              <div class="setting-item">
+                <span class="setting-label">Monero Node</span>
+                <span class="setting-value" id="moneroNodeStatus">Checking...</span>
+              </div>
+              <div class="setting-item">
+                <span class="setting-label">Demo Mode</span>
+                <span class="setting-value" id="demoModeStatus">-</span>
+              </div>
+              <div class="setting-item">
+                <span class="setting-label">Confirmations Required</span>
+                <span class="setting-value" id="confirmationsRequired">-</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h2>Invoice Settings</h2>
+            </div>
+            <div class="settings-list">
+              <div class="setting-item">
+                <span class="setting-label">Invoice Expiry</span>
+                <span class="setting-value" id="invoiceExpiry">-</span>
+              </div>
+              <div class="setting-item">
+                <span class="setting-label">API Port</span>
+                <span class="setting-value" id="apiPort">-</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Invoice Modal -->
+  <div class="modal" id="invoiceModal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <button class="modal-close" id="modalClose">&times;</button>
+      <div class="modal-header">
+        <h2>Invoice Details</h2>
+      </div>
+      <div class="modal-body" id="modalBody">
+        <!-- Populated dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Load Invoice Modal -->
+  <div class="modal" id="loadInvoiceModal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content modal-sm">
+      <button class="modal-close" id="loadModalClose">&times;</button>
+      <div class="modal-header">
+        <h2>Load Invoice</h2>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="loadInvoiceId">Invoice ID</label>
+          <input type="text" id="loadInvoiceId" placeholder="Enter invoice ID...">
+        </div>
+        <button class="btn btn-primary" id="loadInvoiceSubmitBtn" style="width: 100%;">Load</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>
