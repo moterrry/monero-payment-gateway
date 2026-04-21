@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  monero-gateway:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - MONERO_RPC_URL=http://monero-wallet-rpc:18081
+      - MONERO_RPC_USER=user
+      - MONERO_RPC_PASS=pass
+      - CONFIRMATIONS_REQUIRED=10
+      - API_KEYS=your-api-key-here
+      - DATABASE_URL=/app/data/payments.db
+      - INVOICE_EXPIRY_MINUTES=60
+      - WORKER_INTERVAL_MS=15000
+      - LOG_LEVEL=info
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      - monero-wallet-rpc
+    restart: unless-stopped
+
+  monero-wallet-rpc:
+    image: monero/monero:latest
+    command: >
+      monero-wallet-rpc
+      --wallet-dir=/wallet
+      --bind=0.0.0.0:18081
+      --rpc-bind-port=18081
+      --rpc-login=user:pass
+      --disable-background-tx
+      --log-level=2
+    volumes:
+      - ./monero-data:/wallet
+    ports:
+      - "18081:18081"
+    restart: unless-stopped

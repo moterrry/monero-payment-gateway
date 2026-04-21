@@ -1,0 +1,26 @@
+{
+  "name": "monero-payment-gateway",
+  "version": "1.0.0",
+  "description": "Production-ready Monero (XMR) payment gateway backend",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "db:migrate": "node src/db/migrate.js",
+    "test": "echo \"No tests configured\" && exit 0"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "better-sqlite3": "^11.5.0",
+    "axios": "^1.7.7",
+    "uuid": "^10.0.0",
+    "zod": "^3.23.8",
+    "pino": "^9.4.0",
+    "pino-pretty": "^11.2.1",
+    "qrcode": "^1.5.4",
+    "node-fetch": "^2.7.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
